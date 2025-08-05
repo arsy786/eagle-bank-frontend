@@ -10,6 +10,14 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { apiClient } from "@/lib/api";
 import {
 	ArrowDownLeft,
@@ -24,10 +32,29 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+interface Account {
+	id: string;
+	accountName: string;
+	accountType: string;
+	accountNumber: string;
+	createdAt: Date;
+	balance?: number;
+}
+
+interface Transaction {
+	id: string;
+	transactionType: TransactionType;
+	amount: number;
+	createdAt: Date;
+}
+
+type TransactionType = "DEPOSIT" | "WITHDRAWAL";
+
 export default function AccountDetailsPage() {
-	const [account, setAccount] = useState<any>(null);
-	const [transactions, setTransactions] = useState<any[]>([]);
+	const [account, setAccount] = useState<Account | null>(null);
+	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [loading, setLoading] = useState(true);
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 	const params = useParams();
 	const router = useRouter();
 	const accountId = params.id as string;
@@ -57,22 +84,32 @@ export default function AccountDetailsPage() {
 		}
 	};
 
-	const handleDeleteAccount = async () => {
-		if (
-			!confirm(
-				`Are you sure you want to delete "${account.accountName}"? This action cannot be undone.`
-			)
-		) {
-			return;
-		}
+	const handleDeleteClick = () => {
+		setDeleteDialogOpen(true);
+	};
 
+	const handleDeleteConfirm = async () => {
 		try {
 			await apiClient.deleteAccount(accountId);
 			toast.success("Account deleted successfully");
 			router.push("/accounts");
 		} catch (error: any) {
 			toast.error(error.message || "Failed to delete account");
+		} finally {
+			setDeleteDialogOpen(false);
 		}
+	};
+
+	const handleDeleteCancel = () => {
+		setDeleteDialogOpen(false);
+	};
+
+	const getTransactionIcon = (type: TransactionType) => {
+		return type === "DEPOSIT" ? (
+			<ArrowDownLeft className="h-4 w-4 text-green-600" />
+		) : (
+			<ArrowUpRight className="h-4 w-4 text-red-600" />
+		);
 	};
 
 	if (loading) {
@@ -137,7 +174,7 @@ export default function AccountDetailsPage() {
 										Edit
 									</Link>
 								</Button>
-								<Button variant="destructive" onClick={handleDeleteAccount}>
+								<Button variant="destructive" onClick={handleDeleteClick}>
 									<Trash2 className="h-4 w-4 mr-2" />
 									Delete
 								</Button>
@@ -180,14 +217,6 @@ export default function AccountDetailsPage() {
 												{account.accountType?.replace("_", " ")}
 											</p>
 										</div>
-										{account.description && (
-											<div>
-												<p className="text-sm font-medium text-gray-500">
-													Description
-												</p>
-												<p>{account.description}</p>
-											</div>
-										)}
 										<div>
 											<p className="text-sm font-medium text-gray-500">
 												Created
@@ -266,21 +295,12 @@ export default function AccountDetailsPage() {
 																	: "bg-red-100"
 															}`}
 														>
-															{transaction.transactionType === "DEPOSIT" ? (
-																<ArrowDownLeft className="h-4 w-4 text-green-600" />
-															) : (
-																<ArrowUpRight className="h-4 w-4 text-red-600" />
-															)}
+															{getTransactionIcon(transaction.transactionType)}
 														</div>
 														<div>
 															<p className="font-medium capitalize">
 																{transaction.transactionType.toLowerCase()}
 															</p>
-															{transaction.description && (
-																<p className="text-sm text-gray-500">
-																	{transaction.description}
-																</p>
-															)}
 															<p className="text-sm text-gray-500">
 																{new Date(
 																	transaction.createdAt
@@ -322,6 +342,26 @@ export default function AccountDetailsPage() {
 					</div>
 				</main>
 			</div>
+
+			<Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Are you absolutely sure?</DialogTitle>
+						<DialogDescription>
+							This action cannot be undone. This will permanently delete your
+							account and remove your data from our servers.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogFooter>
+						<Button variant="outline" onClick={handleDeleteCancel}>
+							Cancel
+						</Button>
+						<Button variant="destructive" onClick={handleDeleteConfirm}>
+							Delete
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</ProtectedRoute>
 	);
 }
