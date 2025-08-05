@@ -19,7 +19,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -27,12 +26,17 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+const ACCOUNT_TYPES = [
+	{ value: "SAVINGS", label: "Savings Account" },
+	{ value: "CHECKING", label: "Checking Account" },
+	{ value: "BUSINESS", label: "Business Account" },
+	{ value: "JOINT", label: "Joint Account" },
+];
+
 export default function NewAccountPage() {
 	const [formData, setFormData] = useState({
 		accountName: "",
 		accountType: "",
-		initialBalance: "",
-		description: "",
 	});
 	const [loading, setLoading] = useState(false);
 	const router = useRouter();
@@ -60,7 +64,6 @@ export default function NewAccountPage() {
 		try {
 			const accountData = {
 				...formData,
-				initialBalance: parseFloat(formData.initialBalance) || 0,
 			};
 
 			await apiClient.createAccount(accountData);
@@ -102,14 +105,13 @@ export default function NewAccountPage() {
 						<CardContent>
 							<form onSubmit={handleSubmit} className="space-y-6">
 								<div className="space-y-2">
-									<Label htmlFor="accountName">Account Name *</Label>
+									<Label htmlFor="accountName">Account Name</Label>
 									<Input
 										id="accountName"
 										name="accountName"
 										placeholder="e.g., My Savings Account"
 										value={formData.accountName}
 										onChange={handleChange}
-										required
 									/>
 								</div>
 
@@ -124,47 +126,19 @@ export default function NewAccountPage() {
 											<SelectValue placeholder="Select account type" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="SAVINGS">Savings Account</SelectItem>
-											<SelectItem value="CHECKING">Checking Account</SelectItem>
-											<SelectItem value="BUSINESS">Business Account</SelectItem>
-											<SelectItem value="JOINT">Joint Account</SelectItem>
+											{ACCOUNT_TYPES.map((type) => (
+												<SelectItem key={type.value} value={type.value}>
+													{type.label}
+												</SelectItem>
+											))}
 										</SelectContent>
 									</Select>
-								</div>
-
-								<div className="space-y-2">
-									<Label htmlFor="initialBalance">Initial Balance</Label>
-									<Input
-										id="initialBalance"
-										name="initialBalance"
-										type="number"
-										min="0"
-										step="0.01"
-										placeholder="0.00"
-										value={formData.initialBalance}
-										onChange={handleChange}
-									/>
-									<p className="text-sm text-gray-500">
-										Enter the initial deposit amount (optional)
-									</p>
-								</div>
-
-								<div className="space-y-2">
-									<Label htmlFor="description">Description</Label>
-									<Textarea
-										id="description"
-										name="description"
-										placeholder="Optional description for this account"
-										value={formData.description}
-										onChange={handleChange}
-										rows={3}
-									/>
 								</div>
 
 								<div className="flex space-x-4">
 									<Button
 										type="submit"
-										disabled={loading}
+										disabled={loading || !formData.accountType}
 										className="flex-1 bg-blue-500"
 									>
 										{loading ? "Creating Account..." : "Create Account"}
