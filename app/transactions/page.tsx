@@ -3,22 +3,39 @@
 import { Header } from "@/components/layout/header";
 import { ProtectedRoute } from "@/components/layout/protected-route";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
 import { ArrowDownLeft, ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+interface Account {
+	id: string;
+	accountName: string;
+	accountType: string;
+	accountNumber: string;
+	createdAt: Date;
+	balance?: number;
+}
+
+interface Transaction {
+	id: string;
+	transactionType: TransactionType;
+	amount: number;
+	createdAt: Date;
+}
+
+interface MappedTransaction extends Transaction {
+	accountId: string;
+	accountName: string;
+}
+
+type TransactionType = "DEPOSIT" | "WITHDRAWAL";
+
 export default function TransactionsPage() {
-	const [transactions, setTransactions] = useState<any[]>([]);
-	const [accounts, setAccounts] = useState<any[]>([]);
+	const [transactions, setTransactions] = useState<MappedTransaction[]>([]);
+	const [accounts, setAccounts] = useState<Account[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -72,8 +89,8 @@ export default function TransactionsPage() {
 		}).format(amount);
 	};
 
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString("en-US", {
+	const formatDate = (date: string | Date) => {
+		return new Date(date).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "short",
 			day: "numeric",
@@ -91,6 +108,48 @@ export default function TransactionsPage() {
 						<div className="flex items-center justify-center h-64">
 							<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
 						</div>
+					</main>
+				</div>
+			</ProtectedRoute>
+		);
+	}
+
+	if (transactions.length === 0) {
+		return (
+			<ProtectedRoute>
+				<div className="min-h-screen bg-gray-50">
+					<Header />
+					<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+						<div className="flex justify-between items-center mb-8">
+							<div>
+								<h1 className="text-3xl font-bold text-gray-900">
+									All Transactions
+								</h1>
+								<p className="text-gray-600">
+									View all transactions across your accounts
+								</p>
+							</div>
+							<Button asChild className="bg-blue-500">
+								<Link href="/accounts">
+									<Plus className="h-4 w-4 mr-2" />
+									New Transaction
+								</Link>
+							</Button>
+						</div>
+						<Card>
+							<CardContent className="text-center py-16">
+								<ArrowUpRight className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+								<h3 className="text-lg font-medium text-gray-900 mb-2">
+									No transactions yet
+								</h3>
+								<p className="text-gray-500 mb-6">
+									Create your first transaction to get started
+								</p>
+								<Button asChild className="bg-blue-500">
+									<Link href="/accounts">Go to Accounts</Link>
+								</Button>
+							</CardContent>
+						</Card>
 					</main>
 				</div>
 			</ProtectedRoute>
@@ -120,88 +179,64 @@ export default function TransactionsPage() {
 						</Button>
 					</div>
 
-					{transactions.length === 0 ? (
-						<Card>
-							<CardContent className="text-center py-16">
-								<ArrowUpRight className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-								<h3 className="text-lg font-medium text-gray-900 mb-2">
-									No transactions yet
-								</h3>
-								<p className="text-gray-500 mb-6">
-									Create your first transaction to get started
-								</p>
-								<Button asChild className="bg-blue-500">
-									<Link href="/accounts">Go to Accounts</Link>
-								</Button>
-							</CardContent>
-						</Card>
-					) : (
-						<div className="space-y-4">
-							{transactions.map((transaction) => (
-								<Card
-									key={transaction.id}
-									className="hover:shadow-md transition-shadow"
-								>
-									<CardContent className="p-6">
-										<div className="flex items-center justify-between">
-											<div className="flex items-center space-x-4">
-												<div
-													className={`p-2 rounded-full ${
-														transaction.transactionType === "DEPOSIT"
-															? "bg-green-100 text-green-600"
-															: "bg-red-100 text-red-600"
-													}`}
-												>
-													{transaction.transactionType === "DEPOSIT" ? (
-														<ArrowDownLeft className="h-5 w-5" />
-													) : (
-														<ArrowUpRight className="h-5 w-5" />
-													)}
-												</div>
-												<div>
-													<h3 className="font-semibold text-gray-900">
-														{transaction.transactionType === "DEPOSIT"
-															? "Deposit"
-															: "Withdrawal"}
-													</h3>
-													<p className="text-sm text-gray-500">
-														{transaction.accountName}
-													</p>
-													{transaction.description && (
-														<p className="text-sm text-gray-600">
-															{transaction.description}
-														</p>
-													)}
-													<p className="text-xs text-gray-400">
-														{formatDate(transaction.createdAt)}
-													</p>
-												</div>
+					<div className="space-y-4">
+						{transactions.map((transaction) => (
+							<Card
+								key={transaction.id}
+								className="hover:shadow-md transition-shadow"
+							>
+								<CardContent className="p-6">
+									<div className="flex items-center justify-between">
+										<div className="flex items-center space-x-4">
+											<div
+												className={`p-2 rounded-full ${
+													transaction.transactionType === "DEPOSIT"
+														? "bg-green-100 text-green-600"
+														: "bg-red-100 text-red-600"
+												}`}
+											>
+												{transaction.transactionType === "DEPOSIT" ? (
+													<ArrowDownLeft className="h-5 w-5" />
+												) : (
+													<ArrowUpRight className="h-5 w-5" />
+												)}
 											</div>
-											<div className="text-right">
-												<p
-													className={`text-lg font-semibold ${
-														transaction.transactionType === "DEPOSIT"
-															? "text-green-600"
-															: "text-red-600"
-													}`}
-												>
+											<div>
+												<h3 className="font-semibold text-gray-900">
 													{transaction.transactionType === "DEPOSIT"
-														? "+"
-														: "-"}
-													{formatAmount(transaction.amount)}
+														? "Deposit"
+														: "Withdrawal"}
+												</h3>
+												<p className="text-sm text-gray-500">
+													{transaction.accountName}
 												</p>
-												<Button asChild variant="ghost" size="sm">
-													<Link href={`/accounts/${transaction.accountId}`}>
-														View Account
-													</Link>
-												</Button>
+												<p className="text-xs text-gray-400">
+													{formatDate(transaction.createdAt)}
+												</p>
 											</div>
 										</div>
-									</CardContent>
-								</Card>
-							))}
-						</div>
-					)}
+										<div className="text-right">
+											<p
+												className={`text-lg font-semibold ${
+													transaction.transactionType === "DEPOSIT"
+														? "text-green-600"
+														: "text-red-600"
+												}`}
+											>
+												{transaction.transactionType === "DEPOSIT" ? "+" : "-"}
+												{formatAmount(transaction.amount)}
+											</p>
+											<Button asChild variant="ghost" size="sm">
+												<Link href={`/accounts/${transaction.accountId}`}>
+													View Account
+												</Link>
+											</Button>
+										</div>
+									</div>
+								</CardContent>
+							</Card>
+						))}
+					</div>
 				</main>
 			</div>
 		</ProtectedRoute>
