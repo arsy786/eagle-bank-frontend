@@ -5,7 +5,7 @@ import { ProtectedRoute } from "@/components/layout/protected-route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
-import { ArrowDownLeft, ArrowUpRight, Plus } from "lucide-react";
+import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -132,7 +132,7 @@ export default function TransactionsPage() {
 							<Button asChild className="bg-blue-500">
 								<Link href="/accounts">
 									<Plus className="h-4 w-4 mr-2" />
-									New Transaction
+									Go to Accounts
 								</Link>
 							</Button>
 						</div>
@@ -173,8 +173,8 @@ export default function TransactionsPage() {
 						</div>
 						<Button asChild className="bg-blue-500">
 							<Link href="/accounts">
-								<Plus className="h-4 w-4 mr-2" />
-								New Transaction
+								<ArrowLeft className="h-4 w-4 mr-2" />
+								Go to Accounts
 							</Link>
 						</Button>
 					</div>
