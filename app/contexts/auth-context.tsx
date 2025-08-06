@@ -30,6 +30,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
 
+	// Set up JWT expiration handler
+	useEffect(() => {
+		apiClient.setOnTokenExpired(() => {
+			setUser(null);
+			localStorage.removeItem("userId");
+			toast.error("Session expired. Please log in again.");
+			router.push("/login");
+		});
+	}, [router]);
+
 	useEffect(() => {
 		const token = localStorage.getItem("token");
 		const userId = localStorage.getItem("userId"); // This might actually be an email
@@ -49,18 +59,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		}
 		setLoading(false);
 	}, [user]);
-
-	const loadUser = async (userEmail: string) => {
-		try {
-			const userData = await apiClient.getUserByEmail(userEmail);
-			setUser(userData);
-		} catch (error) {
-			console.error("Failed to load user:", error);
-			logout();
-		} finally {
-			setLoading(false);
-		}
-	};
 
 	const login = async (email: string, password: string): Promise<boolean> => {
 		try {
@@ -121,7 +119,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const refreshUser = async () => {
 		const userId = localStorage.getItem("userId");
 		if (userId) {
-			await loadUser(userId);
+			// Since getUserByEmail doesn't exist, we'll just set basic user info
+			setUser({
+				id: userId,
+				email: userId,
+				firstName: "",
+				lastName: "",
+				phoneNumber: "",
+				dateOfBirth: "",
+			});
 		}
 	};
 

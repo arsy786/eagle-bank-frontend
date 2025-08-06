@@ -9,6 +9,7 @@ interface ApiError {
 class ApiClient {
 	private baseURL: string;
 	private token: string | null = null;
+	private onTokenExpired: (() => void) | null = null;
 
 	constructor(baseURL: string) {
 		this.baseURL = baseURL;
@@ -26,6 +27,10 @@ class ApiClient {
 				localStorage.removeItem("token");
 			}
 		}
+	}
+
+	setOnTokenExpired(callback: () => void) {
+		this.onTokenExpired = callback;
 	}
 
 	private async request<T>(
@@ -46,6 +51,18 @@ class ApiClient {
 			const response = await fetch(url, config);
 
 			if (!response.ok) {
+				// Handle JWT expiration (401 Unauthorized)
+				if (response.status === 401) {
+					this.setToken(null);
+					if (this.onTokenExpired) {
+						this.onTokenExpired();
+					}
+					throw {
+						message: "Session expired. Please log in again.",
+						status: 401,
+					} as ApiError;
+				}
+
 				const errorData = await response.json().catch(() => null);
 				throw {
 					message:
