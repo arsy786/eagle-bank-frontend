@@ -111,6 +111,11 @@ class ApiClient {
 		});
 	}
 
+	// get Me
+	async getMe() {
+		return this.request<any>(`/v1/users/me`);
+	}
+
 	// User operations
 	async getUser(userId: string) {
 		return this.request<any>(`/v1/users/${userId}`);
