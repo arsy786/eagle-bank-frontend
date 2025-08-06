@@ -20,22 +20,18 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api";
+import {
+	Account,
+	ApiError,
+	CreateTransactionRequest,
+	TRANSACTION_TYPES,
+	TransactionType,
+} from "@/lib/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface Account {
-	id: string;
-	accountName: string;
-	accountType: string;
-	accountNumber: string;
-	createdAt: Date;
-	balance?: number;
-}
-
-type TransactionType = "DEPOSIT" | "WITHDRAWAL";
 
 export default function NewTransactionPage() {
 	const [account, setAccount] = useState<Account | null>(null);
@@ -59,7 +55,10 @@ export default function NewTransactionPage() {
 		const typeParam = searchParams.get("transactionType");
 		if (typeParam) {
 			const normalizedType = typeParam.toUpperCase() as TransactionType;
-			if (normalizedType === "DEPOSIT" || normalizedType === "WITHDRAWAL") {
+			if (
+				normalizedType === TRANSACTION_TYPES.DEPOSIT ||
+				normalizedType === TRANSACTION_TYPES.WITHDRAWAL
+			) {
 				setFormData((prev) => ({
 					...prev,
 					transactionType: normalizedType,
@@ -72,8 +71,9 @@ export default function NewTransactionPage() {
 		try {
 			const accountData = await apiClient.getAccount(accountId);
 			setAccount(accountData);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to load account");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to load account");
 			router.push("/accounts");
 		} finally {
 			setAccountLoading(false);
@@ -101,23 +101,24 @@ export default function NewTransactionPage() {
 		setLoading(true);
 
 		try {
-			const transactionData = {
-				...formData,
+			const transactionData: CreateTransactionRequest = {
+				transactionType: formData.transactionType as TransactionType,
 				amount: parseFloat(formData.amount),
 			};
 
 			await apiClient.createTransaction(accountId, transactionData);
 			toast.success("Transaction created successfully!");
 			router.push(`/accounts/${accountId}`);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to create transaction");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to create transaction");
 		} finally {
 			setLoading(false);
 		}
 	};
 
 	const insufficientFunds =
-		formData.transactionType === "WITHDRAWAL" &&
+		formData.transactionType === TRANSACTION_TYPES.WITHDRAWAL &&
 		account?.balance !== undefined &&
 		parseFloat(formData.amount) > account.balance;
 
@@ -211,8 +212,12 @@ export default function NewTransactionPage() {
 											<SelectValue placeholder="Select transaction type" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value="DEPOSIT">Deposit</SelectItem>
-											<SelectItem value="WITHDRAWAL">Withdrawal</SelectItem>
+											<SelectItem value={TRANSACTION_TYPES.DEPOSIT}>
+												Deposit
+											</SelectItem>
+											<SelectItem value={TRANSACTION_TYPES.WITHDRAWAL}>
+												Withdrawal
+											</SelectItem>
 										</SelectContent>
 									</Select>
 								</div>
@@ -230,7 +235,7 @@ export default function NewTransactionPage() {
 										onChange={handleChange}
 										required
 									/>
-									{formData.transactionType === "WITHDRAWAL" &&
+									{formData.transactionType === TRANSACTION_TYPES.WITHDRAWAL &&
 										account.balance &&
 										parseFloat(formData.amount) > account.balance && (
 											<p className="text-sm text-red-600">

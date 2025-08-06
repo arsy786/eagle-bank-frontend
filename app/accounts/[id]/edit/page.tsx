@@ -20,26 +20,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api";
+import { Account, ACCOUNT_TYPES, ApiError } from "@/lib/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface Account {
-	id: string;
-	accountName: string;
-	accountType: string;
-	accountNumber: string;
-	balance?: number;
-}
-
-const ACCOUNT_TYPES = [
-	{ value: "SAVINGS", label: "Savings Account" },
-	{ value: "CHECKING", label: "Checking Account" },
-	{ value: "BUSINESS", label: "Business Account" },
-	{ value: "JOINT", label: "Joint Account" },
-];
 
 export default function EditAccountPage() {
 	const [account, setAccount] = useState<Account | null>(null);
@@ -67,8 +53,9 @@ export default function EditAccountPage() {
 				accountName: accountData.accountName,
 				accountType: accountData.accountType,
 			});
-		} catch (error: any) {
-			toast.error(error.message || "Failed to load account");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to load account");
 			router.push("/accounts");
 		} finally {
 			setAccountLoading(false);

@@ -19,19 +19,11 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { apiClient } from "@/lib/api";
+import { Account, ApiError } from "@/lib/types";
 import { CreditCard, Edit, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface Account {
-	id: string;
-	accountName: string;
-	accountType: string;
-	accountNumber: string;
-	createdAt: Date;
-	balance?: number;
-}
 
 export default function AccountsPage() {
 	const [accounts, setAccounts] = useState<Account[]>([]);
@@ -47,14 +39,15 @@ export default function AccountsPage() {
 		try {
 			const accountsData = await apiClient.getAccounts();
 			setAccounts(accountsData);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to load accounts");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to load accounts");
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	const handleDeleteClick = (account: any) => {
+	const handleDeleteClick = (account: Account) => {
 		setAccountToDelete(account);
 		setDeleteDialogOpen(true);
 	};
@@ -66,8 +59,9 @@ export default function AccountsPage() {
 			await apiClient.deleteAccount(accountToDelete.id);
 			toast.success("Account deleted successfully");
 			loadAccounts();
-		} catch (error: any) {
-			toast.error(error.message || "Failed to delete account");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to delete account");
 		} finally {
 			setDeleteDialogOpen(false);
 			setAccountToDelete(null);

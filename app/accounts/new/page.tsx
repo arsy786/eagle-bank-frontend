@@ -20,18 +20,12 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { apiClient } from "@/lib/api";
+import { ACCOUNT_TYPES, ApiError, CreateAccountRequest } from "@/lib/types";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-
-const ACCOUNT_TYPES = [
-	{ value: "SAVINGS", label: "Savings Account" },
-	{ value: "CHECKING", label: "Checking Account" },
-	{ value: "BUSINESS", label: "Business Account" },
-	{ value: "JOINT", label: "Joint Account" },
-];
 
 export default function NewAccountPage() {
 	const [formData, setFormData] = useState({
@@ -62,15 +56,16 @@ export default function NewAccountPage() {
 		setLoading(true);
 
 		try {
-			const accountData = {
+			const accountData: CreateAccountRequest = {
 				...formData,
 			};
 
 			await apiClient.createAccount(accountData);
 			toast.success("Account created successfully!");
 			router.push("/accounts");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to create account");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to create account");
 		} finally {
 			setLoading(false);
 		}

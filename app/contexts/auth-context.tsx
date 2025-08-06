@@ -1,24 +1,16 @@
 "use client";
 
 import { apiClient } from "@/lib/api";
+import { ApiError, RegisterRequest, User } from "@/lib/types";
 import { useRouter } from "next/navigation";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface User {
-	id: string;
-	email: string;
-	firstName: string;
-	lastName: string;
-	phoneNumber?: string;
-	dateOfBirth?: string;
-}
 
 interface AuthContextType {
 	user: User | null;
 	loading: boolean;
 	login: (email: string, password: string) => Promise<boolean>;
-	register: (userData: any) => Promise<boolean>;
+	register: (userData: RegisterRequest) => Promise<boolean>;
 	logout: () => void;
 	refreshUser: () => Promise<void>;
 }
@@ -35,8 +27,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			const userData = await apiClient.getMe();
 			setUser(userData);
 		} catch (error) {
-			setUser(null);
-			apiClient.setToken(null);
+			// Only clear user if it's a 401 (unauthorized) error
+			const err = error as ApiError;
+			if (err.status === 401) {
+				setUser(null);
+				apiClient.setToken(null);
+				localStorage.removeItem("token");
+			}
+			// For other errors, keep the user logged in (token might still be valid)
 		} finally {
 			setLoading(false);
 		}
@@ -46,21 +44,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	useEffect(() => {
 		apiClient.setOnTokenExpired(() => {
 			setUser(null);
-			localStorage.removeItem("userId");
+			localStorage.removeItem("token");
 			toast.error("Session expired. Please log in again.");
 			router.push("/login");
 		});
 	}, [router]);
 
-	// Handle token expiration
+	// Handle initial token loading and user authentication
 	useEffect(() => {
-		const token = localStorage.getItem("token");
+		const initializeAuth = async () => {
+			const token = localStorage.getItem("token");
 
-		if (token) {
-			apiClient.setToken(token);
-			loadUser();
-		}
-		setLoading(false);
+			if (token) {
+				apiClient.setToken(token);
+				await loadUser();
+			} else {
+				setLoading(false);
+			}
+		};
+
+		initializeAuth();
 	}, []);
 
 	const login = async (email: string, password: string): Promise<boolean> => {
@@ -79,27 +82,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			toast.success("Successfully logged in!");
 			router.push("/dashboard");
 			return true;
-		} catch (error: any) {
-			toast.error(error.message || "Login failed");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Login failed");
 			return false;
 		}
 	};
 
-	const register = async (userData: any): Promise<boolean> => {
+	const register = async (userData: RegisterRequest): Promise<boolean> => {
 		try {
 			await apiClient.register(userData);
 			toast.success("Account created successfully! Please log in.");
 			router.push("/login");
 			return true;
-		} catch (error: any) {
-			toast.error(error.message || "Registration failed");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Registration failed");
 			return false;
 		}
 	};
 
 	const logout = () => {
 		apiClient.setToken(null);
-		localStorage.removeItem("userId");
+		localStorage.removeItem("token");
 		setUser(null);
 		router.push("/login");
 		toast.success("Logged out successfully");

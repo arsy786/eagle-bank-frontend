@@ -11,29 +11,18 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
+import {
+	Account,
+	ApiError,
+	Transaction,
+	TRANSACTION_TYPE_LABELS,
+	TRANSACTION_TYPES,
+} from "@/lib/types";
 import { ArrowDownLeft, ArrowLeft, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface Account {
-	id: string;
-	accountName: string;
-	accountType: string;
-	accountNumber: string;
-	createdAt: Date;
-	balance?: number;
-}
-
-interface Transaction {
-	id: string;
-	transactionType: TransactionType;
-	amount: number;
-	createdAt: Date;
-}
-
-type TransactionType = "DEPOSIT" | "WITHDRAWAL";
 
 export default function TransactionDetailsPage() {
 	const [transaction, setTransaction] = useState<Transaction | null>(null);
@@ -59,9 +48,10 @@ export default function TransactionDetailsPage() {
 
 			setAccount(accountData);
 			setTransaction(transactionData);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to load transaction data");
-			if (error.status === 404 || error.status === 403) {
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to load transaction data");
+			if (err.status === 404 || err.status === 403) {
 				router.push(`/accounts/${accountId}`);
 			}
 		} finally {
@@ -152,7 +142,7 @@ export default function TransactionDetailsPage() {
 								<CardContent className="space-y-4 flex flex-col h-full">
 									<div
 										className={`p-6 rounded-lg text-white ${
-											transaction.transactionType === "DEPOSIT"
+											transaction.transactionType === TRANSACTION_TYPES.DEPOSIT
 												? "bg-green-500"
 												: "bg-red-500"
 										}`}
@@ -164,7 +154,8 @@ export default function TransactionDetailsPage() {
 													{formatAmount(transaction.amount)}
 												</p>
 											</div>
-											{transaction.transactionType === "DEPOSIT" ? (
+											{transaction.transactionType ===
+											TRANSACTION_TYPES.DEPOSIT ? (
 												<ArrowDownLeft className="h-6 w-6 opacity-80" />
 											) : (
 												<ArrowUpRight className="h-6 w-6 opacity-80" />
@@ -172,8 +163,8 @@ export default function TransactionDetailsPage() {
 										</div>
 										<div>
 											<p className="text-sm opacity-90">Type</p>
-											<p className="font-semibold capitalize">
-												{transaction.transactionType.toLowerCase()}
+											<p className="font-semibold">
+												{TRANSACTION_TYPE_LABELS[transaction.transactionType]}
 											</p>
 										</div>
 									</div>
@@ -216,8 +207,12 @@ export default function TransactionDetailsPage() {
 													<p className="text-sm font-medium text-gray-500">
 														Type
 													</p>
-													<p className="capitalize">
-														{transaction.transactionType.toLowerCase()}
+													<p>
+														{
+															TRANSACTION_TYPE_LABELS[
+																transaction.transactionType
+															]
+														}
 													</p>
 												</div>
 												<div>
@@ -226,12 +221,14 @@ export default function TransactionDetailsPage() {
 													</p>
 													<p
 														className={`font-semibold ${
-															transaction.transactionType === "DEPOSIT"
+															transaction.transactionType ===
+															TRANSACTION_TYPES.DEPOSIT
 																? "text-green-600"
 																: "text-red-600"
 														}`}
 													>
-														{transaction.transactionType === "DEPOSIT"
+														{transaction.transactionType ===
+														TRANSACTION_TYPES.DEPOSIT
 															? "+"
 															: "-"}
 														{formatAmount(transaction.amount)}
@@ -277,9 +274,7 @@ export default function TransactionDetailsPage() {
 													<p className="text-sm font-medium text-gray-500">
 														Account Type
 													</p>
-													<p className="capitalize">
-														{account.accountType?.replace("_", " ")}
-													</p>
+													<p>{account.accountType}</p>
 												</div>
 											</div>
 										</div>

@@ -11,6 +11,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
+import { Account, MappedTransaction, TRANSACTION_TYPES } from "@/lib/types";
 import {
 	ArrowDownLeft,
 	ArrowUpRight,
@@ -23,31 +24,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface Account {
-  id: string;
-  accountName: string;
-  accountType: string;
-  accountNumber: string;
-	createdAt: Date;
-  balance?: number;
-}
-
-interface Transaction {
-  id: string;
-  transactionType: TransactionType;
-  amount: number;
-  createdAt: string;
-}
-
-interface MappedTransaction extends Transaction {
-	accountName: string;
-}
-
-type TransactionType = "DEPOSIT" | "WITHDRAWAL";
-
 export default function DashboardPage() {
 	const [accounts, setAccounts] = useState<Account[]>([]);
-	const [recentTransactions, setRecentTransactions] = useState<MappedTransaction[]>([]);
+	const [recentTransactions, setRecentTransactions] = useState<
+		MappedTransaction[]
+	>([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -60,7 +41,7 @@ export default function DashboardPage() {
 			setAccounts(accountsData);
 
 			// Load recent transactions for all accounts
-			const allTransactions: any[] = [];
+			const allTransactions: MappedTransaction[] = [];
 			for (const account of accountsData) {
 				try {
 					const transactions = await apiClient.getTransactions(account.id);
@@ -103,7 +84,7 @@ export default function DashboardPage() {
 					<div className="mb-8">
 						<h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
 						<p className="text-gray-600">
-							Welcome back! Here's an overview of your accounts.
+							Welcome back! Here&apos;s an overview of your accounts.
 						</p>
 					</div>
 
@@ -265,12 +246,14 @@ export default function DashboardPage() {
 														<div className="flex items-center space-x-3">
 															<div
 																className={`p-2 rounded-full ${
-																	transaction.transactionType === "DEPOSIT"
+																	transaction.transactionType ===
+																	TRANSACTION_TYPES.DEPOSIT
 																		? "bg-green-100"
 																		: "bg-red-100"
 																}`}
 															>
-																{transaction.transactionType === "DEPOSIT" ? (
+																{transaction.transactionType ===
+																TRANSACTION_TYPES.DEPOSIT ? (
 																	<ArrowDownLeft className="h-4 w-4 text-green-600" />
 																) : (
 																	<ArrowUpRight className="h-4 w-4 text-red-600" />
@@ -288,12 +271,14 @@ export default function DashboardPage() {
 														<div className="text-right">
 															<p
 																className={`font-semibold ${
-																	transaction.transactionType === "DEPOSIT"
+																	transaction.transactionType ===
+																	TRANSACTION_TYPES.DEPOSIT
 																		? "text-green-600"
 																		: "text-red-600"
 																}`}
 															>
-																{transaction.transactionType === "DEPOSIT"
+																{transaction.transactionType ===
+																TRANSACTION_TYPES.DEPOSIT
 																	? "+"
 																	: "-"}
 																$

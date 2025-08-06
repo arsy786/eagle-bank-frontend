@@ -20,6 +20,14 @@ import {
 } from "@/components/ui/dialog";
 import { apiClient } from "@/lib/api";
 import {
+	Account,
+	ApiError,
+	TRANSACTION_TYPES,
+	TRANSACTION_TYPE_LABELS,
+	Transaction,
+	TransactionType,
+} from "@/lib/types";
+import {
 	ArrowDownLeft,
 	ArrowLeft,
 	ArrowUpRight,
@@ -31,24 +39,6 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface Account {
-	id: string;
-	accountName: string;
-	accountType: string;
-	accountNumber: string;
-	createdAt: Date;
-	balance?: number;
-}
-
-interface Transaction {
-	id: string;
-	transactionType: TransactionType;
-	amount: number;
-	createdAt: Date;
-}
-
-type TransactionType = "DEPOSIT" | "WITHDRAWAL";
 
 export default function AccountDetailsPage() {
 	const [account, setAccount] = useState<Account | null>(null);
@@ -74,9 +64,10 @@ export default function AccountDetailsPage() {
 
 			setAccount(accountData);
 			setTransactions(transactionsData);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to load account data");
-			if (error.status === 404 || error.status === 403) {
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to load account data");
+			if (err.status === 404 || err.status === 403) {
 				router.push("/accounts");
 			}
 		} finally {
@@ -105,7 +96,7 @@ export default function AccountDetailsPage() {
 	};
 
 	const getTransactionIcon = (type: TransactionType) => {
-		return type === "DEPOSIT" ? (
+		return type === TRANSACTION_TYPES.DEPOSIT ? (
 			<ArrowDownLeft className="h-4 w-4 text-green-600" />
 		) : (
 			<ArrowUpRight className="h-4 w-4 text-red-600" />
@@ -290,7 +281,8 @@ export default function AccountDetailsPage() {
 													<div className="flex items-center space-x-3">
 														<div
 															className={`p-2 rounded-full ${
-																transaction.transactionType === "DEPOSIT"
+																transaction.transactionType ===
+																TRANSACTION_TYPES.DEPOSIT
 																	? "bg-green-100"
 																	: "bg-red-100"
 															}`}
@@ -299,7 +291,11 @@ export default function AccountDetailsPage() {
 														</div>
 														<div>
 															<p className="font-medium capitalize">
-																{transaction.transactionType.toLowerCase()}
+																{
+																	TRANSACTION_TYPE_LABELS[
+																		transaction.transactionType
+																	]
+																}
 															</p>
 															<p className="text-sm text-gray-500">
 																{new Date(
@@ -311,12 +307,14 @@ export default function AccountDetailsPage() {
 													<div className="text-right">
 														<p
 															className={`font-semibold ${
-																transaction.transactionType === "DEPOSIT"
+																transaction.transactionType ===
+																TRANSACTION_TYPES.DEPOSIT
 																	? "text-green-600"
 																	: "text-red-600"
 															}`}
 														>
-															{transaction.transactionType === "DEPOSIT"
+															{transaction.transactionType ===
+															TRANSACTION_TYPES.DEPOSIT
 																? "+"
 																: "-"}
 															$

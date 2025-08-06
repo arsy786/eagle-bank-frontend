@@ -5,37 +5,20 @@ import { ProtectedRoute } from "@/components/layout/protected-route";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { apiClient } from "@/lib/api";
+import {
+	MappedTransactionWithId,
+	TRANSACTION_TYPES,
+	TRANSACTION_TYPE_LABELS,
+} from "@/lib/types";
 import { ArrowDownLeft, ArrowLeft, ArrowUpRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface Account {
-	id: string;
-	accountName: string;
-	accountType: string;
-	accountNumber: string;
-	createdAt: Date;
-	balance?: number;
-}
-
-interface Transaction {
-	id: string;
-	transactionType: TransactionType;
-	amount: number;
-	createdAt: Date;
-}
-
-interface MappedTransaction extends Transaction {
-	accountId: string;
-	accountName: string;
-}
-
-type TransactionType = "DEPOSIT" | "WITHDRAWAL";
-
 export default function TransactionsPage() {
-	const [transactions, setTransactions] = useState<MappedTransaction[]>([]);
-	const [accounts, setAccounts] = useState<Account[]>([]);
+	const [transactions, setTransactions] = useState<MappedTransactionWithId[]>(
+		[]
+	);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -46,10 +29,9 @@ export default function TransactionsPage() {
 		try {
 			// First get all accounts
 			const accountsData = await apiClient.getAccounts();
-			setAccounts(accountsData);
 
 			// Then get transactions for each account
-			const allTransactions: any[] = [];
+			const allTransactions: MappedTransactionWithId[] = [];
 			for (const account of accountsData) {
 				try {
 					const accountTransactions = await apiClient.getTransactions(
@@ -190,12 +172,14 @@ export default function TransactionsPage() {
 										<div className="flex items-center space-x-4">
 											<div
 												className={`p-2 rounded-full ${
-													transaction.transactionType === "DEPOSIT"
+													transaction.transactionType ===
+													TRANSACTION_TYPES.DEPOSIT
 														? "bg-green-100 text-green-600"
 														: "bg-red-100 text-red-600"
 												}`}
 											>
-												{transaction.transactionType === "DEPOSIT" ? (
+												{transaction.transactionType ===
+												TRANSACTION_TYPES.DEPOSIT ? (
 													<ArrowDownLeft className="h-5 w-5" />
 												) : (
 													<ArrowUpRight className="h-5 w-5" />
@@ -203,9 +187,7 @@ export default function TransactionsPage() {
 											</div>
 											<div>
 												<h3 className="font-semibold text-gray-900">
-													{transaction.transactionType === "DEPOSIT"
-														? "Deposit"
-														: "Withdrawal"}
+													{TRANSACTION_TYPE_LABELS[transaction.transactionType]}
 												</h3>
 												<p className="text-sm text-gray-500">
 													{transaction.accountName}
@@ -218,12 +200,16 @@ export default function TransactionsPage() {
 										<div className="text-right">
 											<p
 												className={`text-lg font-semibold ${
-													transaction.transactionType === "DEPOSIT"
+													transaction.transactionType ===
+													TRANSACTION_TYPES.DEPOSIT
 														? "text-green-600"
 														: "text-red-600"
 												}`}
 											>
-												{transaction.transactionType === "DEPOSIT" ? "+" : "-"}
+												{transaction.transactionType ===
+												TRANSACTION_TYPES.DEPOSIT
+													? "+"
+													: "-"}
 												{formatAmount(transaction.amount)}
 											</p>
 											<Button asChild variant="ghost" size="sm">

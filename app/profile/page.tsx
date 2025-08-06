@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiClient } from "@/lib/api";
+import { ApiError } from "@/lib/types";
 import { Settings, Shield, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +42,6 @@ export default function ProfilePage() {
 				dateOfBirth: user.dateOfBirth || "",
 			});
 		}
-
 	}, [user]);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,8 +60,9 @@ export default function ProfilePage() {
 			await apiClient.updateUser(user.id, formData);
 			await refreshUser();
 			toast.success("Profile updated successfully!");
-		} catch (error: any) {
-			toast.error(error.message || "Failed to update profile");
+		} catch (error) {
+			const err = error as ApiError;
+			toast.error(err.message || "Failed to update profile");
 		} finally {
 			setLoading(false);
 		}

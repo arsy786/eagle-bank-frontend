@@ -1,10 +1,18 @@
+import {
+	Account,
+	ApiError,
+	CreateAccountRequest,
+	CreateTransactionRequest,
+	LoginResponse,
+	RegisterRequest,
+	Transaction,
+	UpdateAccountRequest,
+	UpdateUserRequest,
+	User,
+} from "./types";
+
 const API_BASE_URL =
 	process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080";
-
-interface ApiError {
-	message: string;
-	status: number;
-}
 
 class ApiClient {
 	private baseURL: string;
@@ -93,90 +101,95 @@ class ApiClient {
 	}
 
 	// Authentication
-	async login(email: string, password: string) {
-		return this.request<{ accessToken: string; email: string }>(
-			"/v1/users/login",
-			{
-				method: "POST",
-				body: JSON.stringify({ email, password }),
-			}
-		);
+	async login(email: string, password: string): Promise<LoginResponse> {
+		return this.request<LoginResponse>("/v1/users/login", {
+			method: "POST",
+			body: JSON.stringify({ email, password }),
+		});
 	}
 
-	// Type userData
-	async register(userData: any) {
-		return this.request<any>("/v1/users", {
+	async register(userData: RegisterRequest): Promise<User> {
+		return this.request<User>("/v1/users", {
 			method: "POST",
 			body: JSON.stringify(userData),
 		});
 	}
 
-	// get Me
-	async getMe() {
-		return this.request<any>(`/v1/users/me`);
+	async getMe(): Promise<User> {
+		return this.request<User>("/v1/users/me");
 	}
 
 	// User operations
-	async getUser(userId: string) {
-		return this.request<any>(`/v1/users/${userId}`);
+	async getUser(userId: string): Promise<User> {
+		return this.request<User>(`/v1/users/${userId}`);
 	}
 
-	// Type userData
-	async updateUser(userId: string, userData: any) {
-		return this.request<any>(`/v1/users/${userId}`, {
+	async updateUser(userId: string, userData: UpdateUserRequest): Promise<User> {
+		return this.request<User>(`/v1/users/${userId}`, {
 			method: "PATCH",
 			body: JSON.stringify(userData),
 		});
 	}
 
-	async deleteUser(userId: string) {
+	async deleteUser(userId: string): Promise<void> {
 		return this.request<void>(`/v1/users/${userId}`, {
 			method: "DELETE",
 		});
 	}
 
 	// Account operations
-	async getAccounts() {
-		return this.request<any[]>("/v1/accounts");
+	async getAccounts(): Promise<Account[]> {
+		return this.request<Account[]>("/v1/accounts");
 	}
 
-	async getAccount(accountId: string) {
-		return this.request<any>(`/v1/accounts/${accountId}`);
+	async getAccount(accountId: string): Promise<Account> {
+		return this.request<Account>(`/v1/accounts/${accountId}`);
 	}
 
-	async createAccount(accountData: any) {
-		return this.request<any>("/v1/accounts", {
+	async createAccount(accountData: CreateAccountRequest): Promise<Account> {
+		return this.request<Account>("/v1/accounts", {
 			method: "POST",
 			body: JSON.stringify(accountData),
 		});
 	}
 
-	async updateAccount(accountId: string, accountData: any) {
-		return this.request<any>(`/v1/accounts/${accountId}`, {
+	async updateAccount(
+		accountId: string,
+		accountData: UpdateAccountRequest
+	): Promise<Account> {
+		return this.request<Account>(`/v1/accounts/${accountId}`, {
 			method: "PATCH",
 			body: JSON.stringify(accountData),
 		});
 	}
 
-	async deleteAccount(accountId: string) {
+	async deleteAccount(accountId: string): Promise<void> {
 		return this.request<void>(`/v1/accounts/${accountId}`, {
 			method: "DELETE",
 		});
 	}
 
 	// Transaction operations
-	async getTransactions(accountId: string) {
-		return this.request<any[]>(`/v1/accounts/${accountId}/transactions`);
+	async getTransactions(accountId: string): Promise<Transaction[]> {
+		return this.request<Transaction[]>(
+			`/v1/accounts/${accountId}/transactions`
+		);
 	}
 
-	async getTransaction(accountId: string, transactionId: string) {
-		return this.request<any>(
+	async getTransaction(
+		accountId: string,
+		transactionId: string
+	): Promise<Transaction> {
+		return this.request<Transaction>(
 			`/v1/accounts/${accountId}/transactions/${transactionId}`
 		);
 	}
 
-	async createTransaction(accountId: string, transactionData: any) {
-		return this.request<any>(`/v1/accounts/${accountId}/transactions`, {
+	async createTransaction(
+		accountId: string,
+		transactionData: CreateTransactionRequest
+	): Promise<Transaction> {
+		return this.request<Transaction>(`/v1/accounts/${accountId}/transactions`, {
 			method: "POST",
 			body: JSON.stringify(transactionData),
 		});
@@ -184,4 +197,3 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(API_BASE_URL);
-export type { ApiError };
