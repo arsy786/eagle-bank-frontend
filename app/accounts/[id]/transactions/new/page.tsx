@@ -19,7 +19,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
 import { apiClient } from "@/lib/api";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -27,12 +26,22 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+interface Account {
+	id: string;
+	accountName: string;
+	accountType: string;
+	accountNumber: string;
+	createdAt: Date;
+	balance?: number;
+}
+
+type TransactionType = "DEPOSIT" | "WITHDRAWAL";
+
 export default function NewTransactionPage() {
-	const [account, setAccount] = useState<any>(null);
+	const [account, setAccount] = useState<Account | null>(null);
 	const [formData, setFormData] = useState({
 		transactionType: "",
 		amount: "",
-		// description: '',
 	});
 	const [loading, setLoading] = useState(false);
 	const [accountLoading, setAccountLoading] = useState(true);
@@ -47,12 +56,15 @@ export default function NewTransactionPage() {
 		}
 
 		// Pre-select transaction type from URL params
-		const typeParam = searchParams.get("type");
+		const typeParam = searchParams.get("transactionType");
 		if (typeParam) {
-			setFormData((prev) => ({
-				...prev,
-				transactionType: typeParam.toUpperCase(),
-			}));
+			const normalizedType = typeParam.toUpperCase() as TransactionType;
+			if (normalizedType === "DEPOSIT" || normalizedType === "WITHDRAWAL") {
+				setFormData((prev) => ({
+					...prev,
+					transactionType: normalizedType,
+				}));
+			}
 		}
 	}, [accountId, searchParams]);
 
@@ -103,6 +115,11 @@ export default function NewTransactionPage() {
 			setLoading(false);
 		}
 	};
+
+	const insufficientFunds =
+		formData.transactionType === "WITHDRAWAL" &&
+		account?.balance !== undefined &&
+		parseFloat(formData.amount) > account.balance;
 
 	if (accountLoading) {
 		return (
@@ -225,22 +242,15 @@ export default function NewTransactionPage() {
 										)}
 								</div>
 
-								<div className="space-y-2">
-									<Label htmlFor="description">Description</Label>
-									<Textarea
-										id="description"
-										name="description"
-										placeholder="Optional transaction description"
-										value={formData.description}
-										onChange={handleChange}
-										rows={3}
-									/>
-								</div>
-
 								<div className="flex space-x-4">
 									<Button
 										type="submit"
-										disabled={loading}
+										disabled={
+											loading ||
+											!formData.transactionType ||
+											!formData.amount ||
+											insufficientFunds
+										}
 										className="flex-1 bg-blue-500"
 									>
 										{loading ? "Processing..." : "Create Transaction"}
