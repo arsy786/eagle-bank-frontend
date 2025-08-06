@@ -23,9 +23,31 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+interface Account {
+  id: string;
+  accountName: string;
+  accountType: string;
+  accountNumber: string;
+	createdAt: Date;
+  balance?: number;
+}
+
+interface Transaction {
+  id: string;
+  transactionType: TransactionType;
+  amount: number;
+  createdAt: string;
+}
+
+interface MappedTransaction extends Transaction {
+	accountName: string;
+}
+
+type TransactionType = "DEPOSIT" | "WITHDRAWAL";
+
 export default function DashboardPage() {
-	const [accounts, setAccounts] = useState<any[]>([]);
-	const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+	const [accounts, setAccounts] = useState<Account[]>([]);
+	const [recentTransactions, setRecentTransactions] = useState<MappedTransaction[]>([]);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
