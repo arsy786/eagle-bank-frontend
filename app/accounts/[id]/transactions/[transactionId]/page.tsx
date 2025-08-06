@@ -17,9 +17,27 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+interface Account {
+	id: string;
+	accountName: string;
+	accountType: string;
+	accountNumber: string;
+	createdAt: Date;
+	balance?: number;
+}
+
+interface Transaction {
+	id: string;
+	transactionType: TransactionType;
+	amount: number;
+	createdAt: Date;
+}
+
+type TransactionType = "DEPOSIT" | "WITHDRAWAL";
+
 export default function TransactionDetailsPage() {
-	const [transaction, setTransaction] = useState<any>(null);
-	const [account, setAccount] = useState<any>(null);
+	const [transaction, setTransaction] = useState<Transaction | null>(null);
+	const [account, setAccount] = useState<Account | null>(null);
 	const [loading, setLoading] = useState(true);
 	const params = useParams();
 	const router = useRouter();
@@ -58,7 +76,7 @@ export default function TransactionDetailsPage() {
 		}).format(amount);
 	};
 
-	const formatDate = (dateString: string) => {
+	const formatDate = (dateString: string | Date) => {
 		return new Date(dateString).toLocaleDateString("en-US", {
 			year: "numeric",
 			month: "long",
@@ -121,59 +139,17 @@ export default function TransactionDetailsPage() {
 								</h1>
 								<p className="text-gray-600">{account.accountName}</p>
 							</div>
-							<div className="flex space-x-2">
-								<Button asChild variant="outline" size="sm" disabled>
-									<Link
-										href={`/accounts/${accountId}/transactions/${transactionId}/receipt`}
-									>
-										<svg
-											className="h-4 w-4 mr-2"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-											/>
-										</svg>
-										Print Receipt
-									</Link>
-								</Button>
-								<Button asChild variant="outline" size="sm" disabled>
-									<Link
-										href={`/accounts/${accountId}/transactions/${transactionId}/share`}
-									>
-										<svg
-											className="h-4 w-4 mr-2"
-											fill="none"
-											stroke="currentColor"
-											viewBox="0 0 24 24"
-										>
-											<path
-												strokeLinecap="round"
-												strokeLinejoin="round"
-												strokeWidth={2}
-												d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-											/>
-										</svg>
-										Share
-									</Link>
-								</Button>
-							</div>
 						</div>
 					</div>
 
 					<div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 						{/* Transaction Overview */}
 						<div className="lg:col-span-1">
-							<Card>
+							<Card className="h-full">
 								<CardHeader>
 									<CardTitle>Transaction Overview</CardTitle>
 								</CardHeader>
-								<CardContent className="space-y-4">
+								<CardContent className="space-y-4 flex flex-col h-full">
 									<div
 										className={`p-6 rounded-lg text-white ${
 											transaction.transactionType === "DEPOSIT"
@@ -202,7 +178,7 @@ export default function TransactionDetailsPage() {
 										</div>
 									</div>
 
-									<div className="space-y-3">
+									<div className="space-y-3 flex-grow">
 										<div>
 											<p className="text-sm font-medium text-gray-500">
 												Transaction ID
@@ -215,14 +191,6 @@ export default function TransactionDetailsPage() {
 											</p>
 											<p>{formatDate(transaction.createdAt)}</p>
 										</div>
-										{transaction.description && (
-											<div>
-												<p className="text-sm font-medium text-gray-500">
-													Description
-												</p>
-												<p>{transaction.description}</p>
-											</div>
-										)}
 									</div>
 								</CardContent>
 							</Card>
@@ -230,7 +198,7 @@ export default function TransactionDetailsPage() {
 
 						{/* Transaction Details */}
 						<div className="lg:col-span-2">
-							<Card>
+							<Card className="h-full">
 								<CardHeader>
 									<CardTitle>Transaction Information</CardTitle>
 									<CardDescription>
@@ -316,13 +284,6 @@ export default function TransactionDetailsPage() {
 											</div>
 										</div>
 									</div>
-
-									{transaction.description && (
-										<div>
-											<h3 className="text-lg font-medium mb-4">Description</h3>
-											<p className="text-gray-700">{transaction.description}</p>
-										</div>
-									)}
 								</CardContent>
 							</Card>
 						</div>
