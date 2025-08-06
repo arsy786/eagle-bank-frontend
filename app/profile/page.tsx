@@ -16,7 +16,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { apiClient } from "@/lib/api";
 import { Settings, Shield, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/auth-context";
 
@@ -24,12 +24,25 @@ export default function ProfilePage() {
 	const { user, refreshUser } = useAuth();
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
-		firstName: user?.firstName || "Not available",
-		lastName: user?.lastName || "Not available",
-		email: user?.email || "Not available",
-		phoneNumber: user?.phoneNumber || "Not available",
-		dateOfBirth: user?.dateOfBirth || "Not available",
+		firstName: "",
+		lastName: "",
+		email: "",
+		phoneNumber: "",
+		dateOfBirth: "",
 	});
+
+	useEffect(() => {
+		if (user) {
+			setFormData({
+				firstName: user.firstName || "",
+				lastName: user.lastName || "",
+				email: user.email || "",
+				phoneNumber: user.phoneNumber || "",
+				dateOfBirth: user.dateOfBirth || "",
+			});
+		}
+
+	}, [user]);
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData((prev) => ({
@@ -39,11 +52,12 @@ export default function ProfilePage() {
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
+		if (!user) return;
 		e.preventDefault();
 		setLoading(true);
 
 		try {
-			await apiClient.updateUser(user!.id, formData);
+			await apiClient.updateUser(user.id, formData);
 			await refreshUser();
 			toast.success("Profile updated successfully!");
 		} catch (error: any) {
@@ -53,7 +67,7 @@ export default function ProfilePage() {
 		}
 	};
 
-	if (!user) return null;
+	if (!user) return null; // Or loading indicator
 
 	return (
 		<ProtectedRoute>
@@ -139,6 +153,7 @@ export default function ProfilePage() {
 												value={formData.email}
 												onChange={handleChange}
 												required
+												disabled
 											/>
 										</div>
 
@@ -150,7 +165,6 @@ export default function ProfilePage() {
 												type="tel"
 												value={formData.phoneNumber}
 												onChange={handleChange}
-												disabled
 											/>
 										</div>
 
@@ -162,7 +176,6 @@ export default function ProfilePage() {
 												type="date"
 												value={formData.dateOfBirth}
 												onChange={handleChange}
-												disabled
 											/>
 										</div>
 

@@ -30,6 +30,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	const [loading, setLoading] = useState(true);
 	const router = useRouter();
 
+	const loadUser = async () => {
+		try {
+			const userData = await apiClient.getMe();
+			setUser(userData);
+		} catch (error) {
+			setUser(null);
+			apiClient.setToken(null);
+		} finally {
+			setLoading(false);
+		}
+	};
+
 	// Set up JWT expiration handler
 	useEffect(() => {
 		apiClient.setOnTokenExpired(() => {
@@ -40,53 +52,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 		});
 	}, [router]);
 
+	// Handle token expiration
 	useEffect(() => {
 		const token = localStorage.getItem("token");
-		const userId = localStorage.getItem("userId"); // This might actually be an email
 
-		if (token && userId && !user) {
+		if (token) {
 			apiClient.setToken(token);
-			// Don't try to load user details since the endpoint doesn't exist
-			// Just set basic user info from localStorage
-			setUser({
-				id: userId,
-				email: userId,
-				firstName: "",
-				lastName: "",
-				phoneNumber: "",
-				dateOfBirth: "",
-			});
+			loadUser();
 		}
 		setLoading(false);
-	}, [user]);
+	}, []);
 
 	const login = async (email: string, password: string): Promise<boolean> => {
 		try {
 			const response = await apiClient.login(email, password);
 
-			// Handle the actual response format from the server
 			const token = response.accessToken;
-			const userEmail = response.email;
 
 			if (!token) {
 				throw new Error("No token received from server");
 			}
 
-			// Set the token first
 			apiClient.setToken(token);
-			localStorage.setItem("userId", userEmail); // Use email as userId
+			await loadUser();
 
-			// Set user state with basic info from login response
-			setUser({
-				id: userEmail, // Use email as ID
-				email: userEmail,
-				firstName: "", // Will be populated later if needed
-				lastName: "",
-				phoneNumber: "",
-				dateOfBirth: "",
-			});
-
-			setLoading(false);
 			toast.success("Successfully logged in!");
 			router.push("/dashboard");
 			return true;
@@ -98,7 +87,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 	const register = async (userData: any): Promise<boolean> => {
 		try {
-			const response = await apiClient.register(userData);
+			await apiClient.register(userData);
 			toast.success("Account created successfully! Please log in.");
 			router.push("/login");
 			return true;
@@ -117,18 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 	};
 
 	const refreshUser = async () => {
-		const userId = localStorage.getItem("userId");
-		if (userId) {
-			// Since getUserByEmail doesn't exist, we'll just set basic user info
-			setUser({
-				id: userId,
-				email: userId,
-				firstName: "",
-				lastName: "",
-				phoneNumber: "",
-				dateOfBirth: "",
-			});
-		}
+		await loadUser();
 	};
 
 	return (
