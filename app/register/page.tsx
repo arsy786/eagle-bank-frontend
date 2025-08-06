@@ -14,6 +14,7 @@ import { Eye, EyeOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "../contexts/auth-context";
 
 export default function RegisterPage() {
@@ -42,7 +43,7 @@ export default function RegisterPage() {
 		e.preventDefault();
 
 		if (formData.password !== formData.confirmPassword) {
-			alert("Passwords do not match");
+			toast.error("Passwords do not match");
 			return;
 		}
 
