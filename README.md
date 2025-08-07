@@ -29,19 +29,19 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
    git clone https://github.com/arsy786/eagle-bank-frontend.git
    ```
 
-3. Navigate to the cloned repository's root directory
+3. Navigate to the cloned repository's root directory:
 
    ```bash
    cd eagle-bank-frontend
    ```
 
-2. Install dependencies
+2. Install dependencies:
 
    ```bash
    npm install
    ```
 
-3. Run the development server
+3. Run the development server:
 
    ```bash
    npm run dev
@@ -54,6 +54,10 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
 After starting both the backend and frontend servers, you can access the web application by navigating to `http://localhost:3000` in your web browser. Ensure both servers are running concurrently to allow the frontend to communicate with the backend effectively.
 
 > **Backend Repository**: The backend API for this application is available at [eagle-bank-backend](https://github.com/arsy786/eagle-bank-backend)
+
+### API Base URL
+
+The frontend is configured to send requests to `http://localhost:8080`.
 
 ## Available Scripts
 
