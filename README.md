@@ -37,14 +37,14 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn package manager
+- npm package manager
 
 ### Setup Instructions
 
 1. **Clone the repository**
 
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/arsy786/eagle-bank-frontend
    cd eagle-bank-frontend
    ```
 
@@ -52,16 +52,12 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
 
    ```bash
    npm install
-   # or
-   yarn install
    ```
 
 3. **Run the development server**
 
    ```bash
    npm run dev
-   # or
-   yarn dev
    ```
 
 4. **Open your browser**
