@@ -2,9 +2,10 @@
 
 A modern, secure digital banking platform built with Next.js 13, TypeScript, and Tailwind CSS. Eagle Bank provides users with a comprehensive banking experience including account management, transaction tracking, and secure authentication.
 
-## 🚀 Features
+> **Backend Repository**: The backend API for this application is available at [eagle-bank-backend](https://github.com/arsy786/eagle-bank-backend)
 
-### Core Banking Features
+
+## Features
 
 - **Account Management**: View and manage multiple bank accounts
 - **Transaction Tracking**: Monitor all financial transactions with detailed history
@@ -12,32 +13,11 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
 - **Dashboard**: Comprehensive overview of financial status
 - **Profile Management**: User profile customization and settings
 
-### Technical Features
-
-- **Modern UI/UX**: Beautiful, responsive design with Tailwind CSS
-- **Type Safety**: Full TypeScript implementation
-- **Component Library**: Built with Radix UI primitives and custom components
-- **Form Handling**: Advanced form validation with React Hook Form and Zod
-- **Theme Support**: Dark/light mode with next-themes
-- **Responsive Design**: Mobile-first approach with responsive layouts
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Next.js 13** - React framework with App Router
-- **TypeScript** - Type-safe JavaScript
-- **Tailwind CSS** - Utility-first CSS framework
-- **Radix UI** - Accessible component primitives
-- **React Hook Form** - Performant forms with easy validation
-- **Zod** - TypeScript-first schema validation
-
-## 📦 Installation
+## Getting Started
 
 ### Prerequisites
 
 - Node.js 18+
-- npm package manager
 
 ### Setup Instructions
 
@@ -55,7 +35,6 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
    cd eagle-bank-frontend
    ```
 
-
 2. Install dependencies
 
    ```bash
@@ -68,36 +47,41 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
    npm run dev
    ```
 
-4. Open your browser
-   Navigate to [http://localhost:3000](http://localhost:3000) to view the application.
+4. The frontend should now be running on [http://localhost:3000](http://localhost:3000).
 
-## 🏗️ Project Structure
+### Accessing the Application
 
-```
-eagle-bank-frontend/
-├── app/                    # Next.js 13 App Router
-│   ├── accounts/          # Account management pages
-│   ├── contexts/          # React contexts (auth, etc.)
-│   ├── dashboard/         # Main dashboard
-│   ├── login/            # Authentication pages
-│   ├── profile/          # User profile pages
-│   ├── register/         # Registration pages
-│   ├── transactions/     # Transaction management
-│   ├── globals.css       # Global styles
-│   ├── layout.tsx        # Root layout
-│   └── page.tsx          # Home page
-├── components/            # Reusable components
-│   ├── layout/           # Layout components
-│   └── ui/              # UI components (buttons, forms, etc.)
-├── hooks/                # Custom React hooks
-├── lib/                  # Utility functions and configurations
-├── public/               # Static assets
-└── package.json          # Dependencies and scripts
-```
+After starting both the backend and frontend servers, you can access the web application by navigating to [http://localhost:3000](http://localhost:3000) in your web browser. Ensure both servers are running concurrently to allow the frontend to communicate with the backend effectively.
 
-## 🚀 Available Scripts
+> **Backend Repository**: The backend API for this application is available at [eagle-bank-backend](https://github.com/arsy786/eagle-bank-backend)
+
+## Available Scripts
 
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+
+## 🏗️ Project Structure
+
+```
+eagle-bank-frontend/
+├── app/                  # Next.js 13 App Router
+│   ├── accounts/         # Accounts pages
+│   ├── contexts/         # React contexts (auth, etc.)
+│   ├── dashboard/        # Main dashboard
+│   ├── login/            # Login page
+│   ├── profile/          # Profile page
+│   ├── register/         # Register page
+│   ├── transactions/     # Transactions page
+│   ├── globals.css       # Global styles
+│   ├── layout.tsx        # Root layout
+│   └── page.tsx          # Home page
+├── components/           # Reusable components
+│   ├── layout/           # Layout components
+│   └── ui/               # UI components (buttons, forms, etc.)
+├── hooks/                # Custom React hooks
+├── lib/                  # API requests file, types, utility functions
+├── public/               # Static assets
+└── package.json          # Dependencies and scripts
+```
