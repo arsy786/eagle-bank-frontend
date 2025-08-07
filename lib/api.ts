@@ -43,13 +43,15 @@ class ApiClient {
 
 	private async request<T>(
 		endpoint: string,
-		options: RequestInit = {}
+		options: RequestInit = {},
+		skipAuth = false
 	): Promise<T> {
 		const url = `${this.baseURL}${endpoint}`;
+
 		const config: RequestInit = {
 			headers: {
 				"Content-Type": "application/json",
-				...(this.token && { Authorization: `Bearer ${this.token}` }),
+				...(!skipAuth && this.token && { Authorization: `Bearer ${this.token}` }),
 				...options.headers,
 			},
 			...options,
@@ -105,14 +107,14 @@ class ApiClient {
 		return this.request<LoginResponse>("/v1/users/login", {
 			method: "POST",
 			body: JSON.stringify({ email, password }),
-		});
+		}, true);
 	}
 
 	async register(userData: RegisterRequest): Promise<User> {
 		return this.request<User>("/v1/users", {
 			method: "POST",
 			body: JSON.stringify(userData),
-		});
+		}, true);
 	}
 
 	async getMe(): Promise<User> {
