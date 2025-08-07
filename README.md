@@ -47,11 +47,11 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
    npm run dev
    ```
 
-4. The frontend should now be running on [http://localhost:3000](http://localhost:3000).
+4. The frontend should now be running on `http://localhost:3000`.
 
 ### Accessing the Application
 
-After starting both the backend and frontend servers, you can access the web application by navigating to [http://localhost:3000](http://localhost:3000) in your web browser. Ensure both servers are running concurrently to allow the frontend to communicate with the backend effectively.
+After starting both the backend and frontend servers, you can access the web application by navigating to `http://localhost:3000` in your web browser. Ensure both servers are running concurrently to allow the frontend to communicate with the backend effectively.
 
 > **Backend Repository**: The backend API for this application is available at [eagle-bank-backend](https://github.com/arsy786/eagle-bank-backend)
 
