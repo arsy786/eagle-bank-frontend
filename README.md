@@ -41,13 +41,13 @@ A modern, secure digital banking platform built with Next.js 13, TypeScript, and
    npm install
    ```
 
-3. Run the development server:
+3. Run the app:
 
    ```bash
    npm run dev
    ```
 
-4. The frontend should now be running on `http://localhost:3000`.
+   The frontend should now be running on `http://localhost:3000`.
 
 ### Accessing the Application
 
